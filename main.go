@@ -1,74 +1,74 @@
 package main
 
 import (
-  "os"
-  "text/template"
+	"os"
+  "io/ioutil"
+	"text/template"
+	"log"
 
-  "log"
-  "github.com/ttacon/chalk"
-  "gopkg.in/AlecAivazis/survey.v1"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 var qs = []*survey.Question{
-  {
-    Name:     "username",
-    Prompt:   &survey.Input{Message: "What is your github username?"},
-    Validate: survey.Required,
-    Transform: survey.Title,
-  },
-  {
-    Name: "email",
-    Prompt:   &survey.Input{Message: "What is your github email?"},
-  },
-  {
-    Name: "editor",
-    Prompt: &survey.Select{
-      Message: "What is your favourite editor?",
-      Options: []string{"Vim", "VS Code", "Atom", "Sublime"},
-      Default: "Vim",
-    },
-  },
+	{
+		Name:      "username",
+		Prompt:    &survey.Input{Message: "What is your github username?"},
+		Validate:  survey.Required,
+		Transform: survey.Title,
+	},
+	{
+		Name:   "email",
+		Prompt: &survey.Input{Message: "What is your github email?"},
+	},
+	{
+		Name: "editor",
+		Prompt: &survey.Select{
+			Message: "What is your favourite editor?",
+			Options: []string{"Vim", "Emacs", "VS Code", "Atom", "Sublime"},
+			Default: "Vim",
+		},
+	},
 }
 
 func main() {
-  answers := struct {
-    Username          string
-    Email           string
-    Editor string `survey:"editor"`
-  }{}
+	answers := struct {
+		Username string
+		Email    string
+		Editor   string `survey:"editor"`
+	}{}
 
-  err := survey.Ask(qs, &answers)
-  if err != nil {
-    log.Fatal(err.Error())
-    return
-  }
-  const gitconfig = `
-  [user]
-  name = {{.Username}}
-  email = {{.Email}}
-  [core]
-  editor = {{.Editor}}
-  whitespace = fix,trailing-space,cr-at-eol
-  [push]
-  default = current
-  [help]
-  autocorrect = 1
-  `
-
-  t, err := template.New("answers").Parse(gitconfig)
-  if err != nil {
-    panic(err)
+  editors := map[string]string{
+    "Vim": "vim",
+    "Emacs": "emacs",
+    "VS Code": "code --wait",
+    "Atom": "atom --wait",
+    "Sublime": "subl -n -w",
   }
 
-  f, err := os.Create(".gitconfig")
-  if err != nil {
-    log.Println("create file: ", err)
-    return
-  }
+	err := survey.Ask(qs, &answers)
+  answers.Editor = editors[answers.Editor]
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
 
-  err = t.Execute(f, answers)
+  file, err := ioutil.ReadFile("template.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  if err != nil {
-    log.Fatal(err)
-  }
+	t, err := template.New("answers").Parse(string(file))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	f, err := os.Create(".gitconfig")
+	if err != nil {
+	}
+
+	err = t.Execute(f, answers)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

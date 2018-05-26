@@ -1,7 +1,7 @@
 Interactive fields:
 * username
 * email
-* favourite editor
+* favourite editor (note: not going to work on Windows)
 
 Todo
 * Add web browser field

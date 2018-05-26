@@ -1,0 +1,16 @@
+[user]
+  name = {{.Username}}
+  email = {{.Email}}
+[core]
+  editor = {{.Editor}}
+  whitespace = fix,trailing-space,cr-at-eol
+[push]
+  default = current
+[help]
+  autocorrect = 1
+[fetch]
+  prune = true
+[color "status"]
+  added = yellow
+  changed = green
+  untracked = red
