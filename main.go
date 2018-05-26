@@ -1,48 +1,74 @@
 package main
 
 import (
-	"os"
-	"text/template"
+  "os"
+  "text/template"
 
-	"log"
+  "log"
+  "github.com/ttacon/chalk"
+  "gopkg.in/AlecAivazis/survey.v1"
 )
 
-type Settings struct {
-	Username string
-	Email    string
-	Editor   string
+var qs = []*survey.Question{
+  {
+    Name:     "username",
+    Prompt:   &survey.Input{Message: "What is your github username?"},
+    Validate: survey.Required,
+    Transform: survey.Title,
+  },
+  {
+    Name: "email",
+    Prompt:   &survey.Input{Message: "What is your github email?"},
+  },
+  {
+    Name: "editor",
+    Prompt: &survey.Select{
+      Message: "What is your favourite editor?",
+      Options: []string{"Vim", "VS Code", "Atom", "Sublime"},
+      Default: "Vim",
+    },
+  },
 }
 
 func main() {
-	s := Settings{}
-	err := ReadUserInput(s)
+  answers := struct {
+    Username          string
+    Email           string
+    Editor string `survey:"editor"`
+  }{}
 
-	const gitconfig = `
-[user]
-  name = {{.Username -}}
-  email = {{.Email -}}
-[core]
-  editor = {{.Editor -}}
+  err := survey.Ask(qs, &answers)
+  if err != nil {
+    log.Fatal(err.Error())
+    return
+  }
+  const gitconfig = `
+  [user]
+  name = {{.Username}}
+  email = {{.Email}}
+  [core]
+  editor = {{.Editor}}
   whitespace = fix,trailing-space,cr-at-eol
-[push]
+  [push]
   default = current
-[help]
+  [help]
   autocorrect = 1
-`
-	t, err := template.New("settings").Parse(gitconfig)
-	if err != nil {
-		panic(err)
-	}
+  `
 
-	f, err := os.Create(".gitconfig")
-	if err != nil {
-		log.Println("create file: ", err)
-		return
-	}
+  t, err := template.New("answers").Parse(gitconfig)
+  if err != nil {
+    panic(err)
+  }
 
-	err = t.Execute(f, s)
+  f, err := os.Create(".gitconfig")
+  if err != nil {
+    log.Println("create file: ", err)
+    return
+  }
 
-	if err != nil {
-		log.Fatal(err)
-	}
+  err = t.Execute(f, answers)
+
+  if err != nil {
+    log.Fatal(err)
+  }
 }
