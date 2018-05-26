@@ -1,10 +1,10 @@
 package main
 
 import (
-	"os"
-  "io/ioutil"
-	"text/template"
+	"io/ioutil"
 	"log"
+	"os"
+	"text/template"
 
 	"gopkg.in/AlecAivazis/survey.v1"
 )
@@ -37,22 +37,22 @@ func main() {
 		Editor   string `survey:"editor"`
 	}{}
 
-  editors := map[string]string{
-    "Vim": "vim",
-    "Emacs": "emacs",
-    "VS Code": "code --wait",
-    "Atom": "atom --wait",
-    "Sublime": "subl -n -w",
-  }
+	editors := map[string]string{
+		"Vim":     "vim",
+		"Emacs":   "emacs",
+		"VS Code": "code --wait",
+		"Atom":    "atom --wait",
+		"Sublime": "subl -n -w",
+	}
 
 	err := survey.Ask(qs, &answers)
-  answers.Editor = editors[answers.Editor]
+	answers.Editor = editors[answers.Editor]
 	if err != nil {
 		log.Fatal(err.Error())
 		return
 	}
 
-  file, err := ioutil.ReadFile("template.txt")
+	file, err := ioutil.ReadFile("template.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,8 +63,6 @@ func main() {
 	}
 
 	f, err := os.Create(".gitconfig")
-	if err != nil {
-	}
 
 	err = t.Execute(f, answers)
 
